@@ -6,29 +6,39 @@ import './card.css';
 class Card extends Component {
 
   state = {
-    checked: false
+    data: [
+      {
+        primaryText: 'Adults',
+        secondaryText: '(18 yr+)',
+        type: 'adult',
+        values: [1, 2]
+      },
+      {
+        primaryText: 'Children',
+        secondaryText: '(0 - 17)',
+        type: 'children',
+        values: [0, 1, 2]
+      }
+    ]
   }
 
-  constructor() {
+  constructor () {
     super();
     this.handleClick = this.handleClick.bind(this);
     this.heading = this.heading.bind(this);
+    this.onSelectChange = this.onSelectChange.bind(this);
   }
 
-  handleClick(cb) {
-    const {position} = this.props;
-    if(this.state.checked) {
+  handleClick () {
+    const {position, isChecked} = this.props;
+    if(isChecked) {
       this.props.makeNextCardsDisable(position)
     } else {
       this.props.makePreviousCardsEnable(position)
     }
-
-    this.setState({
-      checked: cb.target.checked
-    })
   }
 
-  heading = () => {
+  heading () {
     const {showCheckBox, title, isChecked} = this.props;
     return (
       <div>{
@@ -43,28 +53,35 @@ class Card extends Component {
     )
   }
 
-  render() {
-    const {title, isChecked} = this.props;
+  onSelectChange (event, type) {
+    this.props.updateSelectBox(event.target.value, type, this.props.position);
+  }
+
+  render () {
+    const {title, isChecked, selectBoxValue} = this.props;
     return (
       <div className={`card card-bg ${isChecked ? 'card-bg' : 'disable-card-bg' }`}>
         <div className="card-body">
           {this.heading()}
           <div className={`card-text row ${isChecked ? 'inner-card-bg' : 'disable-card-bg' }`}>
-            <div className="form-group col-sm-6">
-              <label htmlFor={`${title}-adult`}>Adults<br />(18 yr+)</label>
-              <select className="form-control" id={`${title}-adult`} disabled={!isChecked}>
-                <option>1</option>
-                <option>2</option>
-              </select>
-            </div>
-            <div className="form-group col-sm-6">
-              <label htmlFor={`${title}-chidlren`}>Children<br />(0 - 17)</label>
-              <select className="form-control" id={`${title}-chidlren`} disabled={!isChecked}>
-                <option>0</option>
-                <option>1</option>
-                <option>2</option>
-              </select>
-            </div>
+            {
+              this.state.data.map((item, index) => {
+                return (
+                  <div className="form-group col-sm-6" key={`${title}-${item.type}-${index}`}>
+                    <label htmlFor={`${title}-${item.type}`}>{item.primaryText}<br />{item.secondaryText}</label>
+                    <select className="form-control" id={`${title}-${item.type}`} onChange={(e) => this.onSelectChange(e, item.type)} value={selectBoxValue[item.type]} disabled={!isChecked}>
+                      {
+                        item.values.map((i, index1) => {
+                          return (
+                            <option key={index1}>{i}</option>
+                          )
+                        })
+                      }
+                    </select>
+                  </div>
+                )
+              })
+            }  
           </div>
         </div>
       </div>
@@ -73,12 +90,13 @@ class Card extends Component {
 }
 
 Card.propTypes = {
-  position: PropTypes.number,
-  showCheckBox: PropTypes.bool,
-  cardTitle: PropTypes.string,
   isChecked: PropTypes.bool,
-  makePreviousCardsEnable: PropTypes.func,
-  makeNextCardsDisable: PropTypes.func
+  position: PropTypes.number,
+  cardTitle: PropTypes.string,
+  showCheckBox: PropTypes.bool,
+  updateSelectBox: PropTypes.func,
+  makeNextCardsDisable: PropTypes.func,
+  makePreviousCardsEnable: PropTypes.func
 }
 
 export default Card;
